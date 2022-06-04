@@ -6,7 +6,6 @@ template<class _T>
 class PNArray
 {
 public:
-
 	using Index_t = int64_t;
 	using Size_t = Index_t;
 
@@ -53,6 +52,7 @@ private:
 	_T* _Allocate(Index_t begin, Index_t end);
 	void _Release();
 	void _Fill(Index_t nl, Index_t nh, _T val);
+	void _Copy(const PNArray& obj);
 };
 
 template<class _T> inline
@@ -64,5 +64,73 @@ _T* PNArray<_T>::_Allocate(Index_t begin, Index_t end)
 	catch (std::bad_alloc) {
 		return nullptr;
 	}
+}
 
+template<class _T> inline
+void PNArray<_T>::_Release()
+{
+	if (!this->Empty()) {
+		delete[](_data + _begin);
+		_data = nullptr;
+	}
+}
+
+template<class _T> inline
+void PNArray<_T>::_Fill(Index_t nl, Index_t nh, _T val)
+{
+	if (nl < _begin || nl > _end || nh < _begin || nh > _end || _nl > _nh)
+		return;
+	for (Index_t i = nl; i < nh; i++)
+		_data[i] = val;
+}
+
+template<class _T> inline
+void PNArray<_T>::_Copy(const PNArray<_T>& obj)
+{
+	this->_Release();
+	_begin = obj._begin;
+	_end = obj._end;
+	_data = this->_Allocate(_begin, _end);
+	for (Index_t i = _begin; i <= _end; i++)
+		_data[i] = obj._data[i];
+}
+
+///////////////////////////////////////////////////////////////////
+
+template<class _T> inline
+PNArray<_T>::PNArray()
+	: _begin(0), _end(0), _data(nullptr)
+{
+}
+
+template<class _T> inline
+PNArray<_T>::PNArray(Index_t begin, Index_t end)
+	: _begin(begin), _end(end)
+{
+	_data = this->_Allocate(begin, end);
+}
+
+template<class _T> inline
+PNArray<_T>::PNArray(Size_t size)
+	: _begin(0), _end(size - 1)
+{
+	_data = this->_Allocate(0, size - 1);
+}
+
+template<class _T> inline
+PNArray<_T>::PNArray(const PNArray& obj)
+{
+	this->_Copy(obj);
+}
+
+template<class _T> inline
+PNArray<_T>::~PNArray()
+{
+	this->_Release();
+}
+
+template<class _T> inline
+void PNArray<_T>::Create(Index_t begin, Index_t end)
+{
+	
 }
